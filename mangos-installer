@@ -1,0 +1,313 @@
+#!/bin/bash
+#
+# Copyright (c) 2013, Dimitri Savineau <savineau.dimitri@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+PKG_APT="git patch cmake make gcc g++ libtbb-dev libmysqlclient-dev zlib1g-dev libssl-dev automake"
+PKG_RPM="git patch cmake make gcc gcc-c++ tbb-devel mysql-devel zlib-devel openssl-devel automake"
+
+LOG_FILE="$PWD/mangos-installer.log"
+
+ACE_EXT=0
+CMAKE="cmake"
+DEBUG=0
+JOBS=1
+
+GREEN="\033[31m"
+RED="\033[32m"
+RESET="\033[0m"
+
+function Usage() {
+    cat << EOF
+Usage: $0: [OPTIONS]
+      -p <path>       : Path to MaNGOS (default: /opt/mangos-<version>)
+      -d              : Set in debug mode
+      -a              : Use ACE external
+      -j <number>     : Number of jobs for make (default: 1)
+      -v <version>    : Set MaNGOS version (classic|tbc|wotlk|cata)
+      -h              : Print this help
+EOF
+    exit 1
+}
+
+function GetOSInfo() {
+    if [[ -x $(which uname 2>/dev/null) ]]; then
+        os_ARCH=$(uname -m)
+    else
+        echo "Can't get architecture"
+        exit 1
+    fi
+    if [[ ! "$os_ARCH" =~ i(3|4|5|6)86 ]] && [ "$os_ARCH" != "x86_64" ]; then
+        echo "Unsupported architecture ($ARCH)"
+        exit 1
+    fi
+    if [[ -x $(which lsb_release 2>/dev/null) ]]; then
+        os_VENDOR=$(lsb_release -i -s)
+        os_RELEASE=$(lsb_release -r -s)
+        os_CODENAME=$(lsb_release -c -s)
+        os_PACKAGE="rpm"
+        if [[ "$os_VENDOR" =~ (Debian|Ubuntu) ]]; then
+            os_PACKAGE="deb"
+        elif [[ "$os_VENDOR" =~ "SUSE LINUX" ]]; then
+            lsb_release -d -s | grep -q openSUSE
+            if [ $? -eq 0 ]; then
+                os_VENDOR="openSUSE"
+            else
+                os_VENDOR="SUSE Linux"
+            fi
+        elif [[ $os_VENDOR =~ Red.*Hat ]]; then
+            os_VENDOR="Red Hat"
+        fi
+    elif [ -r /etc/redhat-release ]; then
+        os_PACKAGE="rpm"
+        for os_VENDOR in "Red Hat" CentOS Fedora; do
+            if [[ -n "`grep \"$os_VENDOR\" /etc/redhat-release`" ]]; then
+                ver=`sed -e 's/^.* \(.*\) (\(.*\)).*$/\1\|\2/' /etc/redhat-release`
+                os_CODENAME=${ver#*|}
+                os_RELEASE=${ver%|*}
+                os_RELEASE=${os_RELEASE%.*}
+                break
+            fi
+        done
+    elif [ -r /etc/SuSE-release ]; then
+        os_PACKAGE="rpm"
+        for os_VENDOR in openSUSE "SUSE Linux"; do
+            if [[ -n "`grep \"$os_VENDOR\" /etc/SuSE-release`" ]]; then
+                os_CODENAME=`grep "CODENAME = " /etc/SuSE-release | sed 's:.* = ::g'`
+                os_RELEASE=`grep "VERSION = " /etc/SuSE-release | sed 's:.* = ::g'`
+                break
+            fi
+        done
+    elif [ -r /etc/debian_version ]; then
+        os_PACKAGE="deb"
+	os_VENDOR="Debian"
+	os_RELEASE=$(cat /etc/debian_version)
+        if [[ "$os_RELEASE" =~ "5.0" ]]; then
+            os_CODENAME="lenny"
+	elif [[ "$os_RELEASE" =~ "6.0" ]]; then
+	    os_CODENAME="squeeze"
+	elif [[ "$os_RELEASE" =~ "7." ]]; then
+	    os_CODENAME="wheezy"
+        elif [[ "$os_RELEASE" =~ "jessie" ]]; then
+            os_CODENAME="jessie"
+            os_RELEASE="testing"
+        else
+            echo "Unsupported Debian release ($os_RELEASE)"
+            exit 1
+	fi
+    fi
+    [ "$os_VENDOR" = "Debian" ] && [ "$os_CODENAME" = "lenny" ] && PKG_APT=$(echo $PKG_APT|sed -e "s/libmysqlclient/libmysqlclient15/;s/git/git-core/")
+    if [ "$os_VENDOR" = "CentOS" ]; then
+        if [[ "$os_RELEASE" =~ "6" ]]; then
+            PKG_RPM=$(echo $PKG_RPM|sed -e "s/cmake/cmake28/")
+            CMAKE="cmake28"
+            EPEL="6-8"
+            VER="6"
+        elif [[ "$os_RELEASE" =~ "5" ]]; then
+            EPEL="5-4"
+            VER="5"
+        else
+            echo -e "[${RED}fail${RESET}]"
+            echo "Unsupported CentOS release ($os_RELEASE)"
+            exit 1
+        fi
+    fi
+    echo "-- GNU/Linux $os_VENDOR"
+    echo "-- Codename : $os_CODENAME"
+    echo "-- Release  : $os_RELEASE"
+    echo "-- Package  : $os_PACKAGE"
+    echo "-- Platform : $os_ARCH"
+}
+
+function InstallEpelRepo() {
+    IsPackageInstalled "wget" || YumInstall "wget"
+    wget http://dl.fedoraproject.org/pub/epel/$VER/x86_64/epel-release-$EPEL.noarch.rpm >> $LOG_FILE 2>&1
+    if [ $? -ne 0 ]; then
+        echo -e "[\e[00;31mfail\e[00m]"
+        echo "Unable to download epel-release-$EPEL.noarch.rpm package"
+        exit 1
+    fi
+    rpm -Uvh epel-release-$EPEL.noarch.rpm >> $LOG_FILE 2>&1
+    if [ $? -ne 0 ]; then
+        echo -e "[\e[00;31mfail\e[00m]"
+        echo "Unable to install epel-release-$EPEL.noarch.rpm package"
+        rm -f epel-release-$EPEL.noarch.rpm
+        exit 1
+    fi
+    rm -f epel-release-$EPEL.noarch.rpm
+}
+
+function InstallDependencies() {
+    echo -n "Installing dep... "
+    if [[ "$os_VENDOR" =~ (Ubuntu|Debian) ]]; then
+        apt-get -q=2 update >> $LOG_FILE 2>&1
+        [ "$ACE_EXT" = "1" ] && PKG_APT=$(echo $PKG_APT|sed -e "s/automake/libace-dev/")
+        for PKG in $PKG_APT; do
+            IsPackageInstalled $PKG || AptGetInstall $PKG
+        done
+    elif [[ "$os_VENDOR" =~ (Red Hat|Fedora|CentOS) ]]; then
+        if [ "$os_VENDOR" = "CentOS" ]; then
+            IsPackageInstalled "epel-release-$EPEL" || InstallEpelRepo
+        fi
+        for PKG in $PKG_RPM; do
+            IsPackageInstalled $PKG || YumInstall $PKG
+        done
+    elif [[ "$os_VENDOR" =~ (openSUSE|SUSE Linux) ]]; then
+        for PKG in $PKG_RPM; do
+            IsPackageInstalled $PKG || ZypperInstall $PKG_RPM
+        done
+    else
+        echo -e "[${RED}fail${RESET}]"
+        echo "Support for $os_VENDOR is incomplete."
+        exit 1
+    fi
+    CheckStatus
+}
+
+function IsPackageInstalled() {
+    if [ "$os_PACKAGE" = "deb" ]; then
+        dpkg -s "$@" > /dev/null 2>&1
+    elif [ "$os_PACKAGE" = "rpm" ]; then
+        rpm -q "$@" > /dev/null 2>&1
+    fi
+}
+
+function AptGetInstall() {
+    DEBIAN_FRONTEND=noninteractive \
+        apt-get install --option "Dpkg::Options::=--force-confold" --assume-yes "$@" >> $LOG_FILE 2>&1
+    if [ $? -ne 0 ]; then
+        echo -e "[${RED}fail${RESET}]"
+        echo "Unable to install $@ with apt-get"
+        exit 1
+    fi
+}
+
+function YumInstall() {
+    yum install -y "$@" >> $LOG_FILE 2>&1
+    if [ $? -ne 0 ]; then
+        echo -e "[${RED}fail${RESET}]"
+        echo "Unable to install $@ with yum"
+        exit 1
+    fi
+}
+
+function ZypperInstall() {
+    zypper --non-interactive install --auto-agree-with-licenses "$@" >> $LOG_FILE 2>&1
+    if [ $? -ne 0 ]; then
+        echo -e "[${RED}fail${RESET}]"
+        echo "Unable to install $@ with zypper"
+        exit 1
+    fi
+}
+
+function GetSources() {
+    [ ! -d mangos ] || rm -rf mangos
+    echo -n "Cloning MaNGOS... "
+    git clone $MANGOS mangos >> $LOG_FILE 2>&1
+    CheckStatus
+    echo -n "Cloning SD2...    "
+    git clone $SCRIPTDEV2 mangos/src/bindings/ScriptDev2 >> $LOG_FILE 2>&1
+    CheckStatus
+    MANGOS_REVISION=$(grep "define REVISION_NR" mangos/src/shared/revision_nr.h|awk '{print $3}'|sed -e "s/\"//g")
+    MANGOS_VERSION=$(grep "(MANGOS_VERSION" mangos/CMakeLists.txt|awk '{print $2}'|sed -e "s/)//")
+}
+
+function PatchSources() {
+    cd mangos
+    echo -n "Patching...       "
+    patch -p1 < src/bindings/ScriptDev2/patches/*.patch >> $LOG_FILE 2>&1
+    CheckStatus
+}
+
+function ConfigureCmake() {
+    mkdir -p build && cd build
+    echo -n "Configuration...  "
+    $CMAKE .. -DCMAKE_INSTALL_PREFIX=$PREFIX -DDEBUG=$DEBUG \
+	-DPCH=1 -DACE_USE_EXTERNAL=$ACE_EXT -DTBB_USE_EXTERNAL=1 >> $LOG_FILE 2>&1
+    CheckStatus
+}
+
+function BuildMangos() {
+    echo -n "Compiling...      "
+    make -j $JOBS >> $LOG_FILE 2>&1
+    CheckStatus
+}
+
+function InstallMangos() {
+    echo -n "Installing...     "
+    make install >> $LOG_FILE 2>&1
+    CheckStatus
+}
+
+function CheckStatus() {
+    if [ $? -eq 0 ]; then
+        echo -e "[\e[00;32mOK\e[00m]"
+    else
+        echo -e "[\e[00;31mfail\e[00m]"
+        exit 1
+    fi
+}
+
+while getopts 'hdaj:v:p:' OPTION; do
+    case "$OPTION" in
+        p)
+            PREFIX="$OPTARG"
+            ;;
+        d)
+            DEBUG=1
+            ;;
+        a)
+            ACE_EXT=1
+            ;;
+        j)
+            JOBS="$OPTARG"
+            ;;
+        v)
+            VERSION="$OPTARG"
+            ;;
+        ?)
+            Usage
+            ;;
+    esac
+done
+
+[ -z "$VERSION" ] && Usage
+
+[ -f $LOG_FILE ] && rm -f $LOG_FILE
+
+if [ "$VERSION" = "classic" -o "$VERSION" = "tbc" -o "$VERSION" = "wotlk" -o "$VERSION" = "cata" ]; then
+    MANGOS=git://github.com/cmangos/mangos-$VERSION.git
+    if [ "$VERSION" = "wotlk" ]; then
+        SCRIPTDEV2=git://github.com/scriptdev2/scriptdev2.git
+    else
+        SCRIPTDEV2=git://github.com/scriptdev2/scriptdev2-$VERSION.git
+    fi
+    [ "$VERSION" = "cata" ] && PKG_APT+=" libbz2-dev" && PKG_RPM+=" bzip2-devel"
+    [ -z "$PREFIX" ] && PREFIX="/opt/mangos-$VERSION"
+else
+    echo "$VERSION is not a MaNGOS version"
+    exit 1
+fi
+
+GetOSInfo
+InstallDependencies
+GetSources
+PatchSources
+ConfigureCmake
+BuildMangos
+InstallMangos
+echo "MaNGOS $MANGOS_VERSION ($VERSION) rev $MANGOS_REVISION has been installed !"
+
+exit 0
