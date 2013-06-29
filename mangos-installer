@@ -25,8 +25,8 @@ CMAKE="cmake"
 DEBUG=0
 JOBS=1
 
-GREEN="\033[31m"
-RED="\033[32m"
+GREEN="\033[32m"
+RED="\033[33m"
 RESET="\033[0m"
 
 function Usage() {
