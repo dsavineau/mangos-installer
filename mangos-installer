@@ -224,18 +224,12 @@ function GetSources() {
     MANGOS_VERSION=$(grep "(MANGOS_VERSION" mangos/CMakeLists.txt|awk '{print $2}'|sed -e "s/)//")
 }
 
-function PatchSources() {
-    cd mangos
-    echo -n "Patching...       "
-    patch -p1 < src/bindings/ScriptDev2/patches/*.patch >> $LOG_FILE 2>&1
-    CheckStatus
-}
-
 function ConfigureCmake() {
     mkdir -p build && cd build
     echo -n "Configuration...  "
     $CMAKE .. -DCMAKE_INSTALL_PREFIX=$PREFIX -DDEBUG=$DEBUG \
-	-DPCH=1 -DACE_USE_EXTERNAL=$ACE_EXT -DTBB_USE_EXTERNAL=1 >> $LOG_FILE 2>&1
+	-DPCH=1 -DACE_USE_EXTERNAL=$ACE_EXT -DTBB_USE_EXTERNAL=1 \
+	-DINCLUDE_BINDINGS_DIR=ScriptDev2 >> $LOG_FILE 2>&1
     CheckStatus
 }
 
