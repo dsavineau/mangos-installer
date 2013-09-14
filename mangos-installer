@@ -298,7 +298,6 @@ fi
 GetOSInfo
 InstallDependencies
 GetSources
-PatchSources
 ConfigureCmake
 BuildMangos
 InstallMangos
