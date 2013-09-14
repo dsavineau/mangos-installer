@@ -30,7 +30,6 @@ Sample output :
     Installing dep... [OK]
     Cloning MaNGOS... [OK]
     Cloning SD2...    [OK]
-    Patching...       [OK]
     Configuration...  [OK]
     Compiling...      [OK]
     Installing...     [OK]
