@@ -224,39 +224,6 @@ function GetSources() {
     MANGOS_VERSION=$(grep "(MANGOS_VERSION" mangos/CMakeLists.txt|awk '{print $2}'|sed -e "s/)//")
 }
 
-function PatchPCH() {
-    cd mangos
-    PCH_PATCH=$(mktemp)
-    echo '--- a/cmake/FindPCHSupport.cmake        2013-07-14 18:33:18.250457767 -0400
-+++ b/cmake/FindPCHSupport.cmake        2013-07-16 09:22:15.033107809 -0400
-@@ -17,13 +17,13 @@
-         ARGS  ${CMAKE_CXX_COMPILER_ARG1} -dumpversion
-         OUTPUT_VARIABLE gcc_compiler_version)
-     #MESSAGE("GCC Version: ${gcc_compiler_version}")
--    IF(gcc_compiler_version MATCHES "4\\.[0-9]\\.[0-9]")
-+    IF(gcc_compiler_version MATCHES "4\\.[0-9](\\.[0-9])?")
-         SET(PCHSupport_FOUND TRUE)
--    ELSE(gcc_compiler_version MATCHES "4\\.[0-9]\\.[0-9]")
--        IF(gcc_compiler_version MATCHES "3\\.4\\.[0-9]")
-+    ELSE(gcc_compiler_version MATCHES "4\\.[0-9](\\.[0-9])?")
-+        IF(gcc_compiler_version MATCHES "3\\.4(\\.[0-9])?")
-             SET(PCHSupport_FOUND TRUE)
--        ENDIF(gcc_compiler_version MATCHES "3\\.4\\.[0-9]")
--    ENDIF(gcc_compiler_version MATCHES "4\\.[0-9]\\.[0-9]")
-+        ENDIF(gcc_compiler_version MATCHES "3\\.4(\\.[0-9])?")
-+    ENDIF(gcc_compiler_version MATCHES "4\\.[0-9](\\.[0-9])?")
-
-   SET(_PCH_include_prefix "-I")
-' > $PCH_PATCH
-    MD5=$(md5sum cmake/FindPCHSupport.cmake|awk '{print $1}')
-    if [ "$MD5" = "361d75c8ec43121891ba615d981e5b0f" ]; then
-        echo -n "Patching PCH...   "
-        patch -p1 < $PCH_PATCH >> $LOG_FILE 2>&1
-        CheckStatus
-    fi
-    rm -f $PCH_PATCH
-}
-
 function ConfigureCmake() {
     mkdir -p build && cd build
     echo -n "Configuration...  "
@@ -331,7 +298,6 @@ fi
 GetOSInfo
 InstallDependencies
 GetSources
-PatchPCH
 ConfigureCmake
 BuildMangos
 InstallMangos
