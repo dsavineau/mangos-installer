@@ -225,7 +225,7 @@ function GetSources() {
 }
 
 function ConfigureCmake() {
-    mkdir -p build && cd build
+    mkdir -p mangos/build && cd mangos/build
     echo -n "Configuration...  "
     $CMAKE .. -DCMAKE_INSTALL_PREFIX=$PREFIX -DDEBUG=$DEBUG \
 	-DPCH=1 -DACE_USE_EXTERNAL=$ACE_EXT -DTBB_USE_EXTERNAL=1 \
