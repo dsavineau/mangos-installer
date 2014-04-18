@@ -53,6 +53,7 @@ mangos-installer has been tested on several GNU/Linux distributions :
 * Ubuntu Precise (12.04)
 * Ubuntu Quantal (12.10)
 * Ubuntu Raring (13.04)
+* Ubuntu Trusty (14.04)
 * CentOS 5.x
 * CentOS 6.x
 * Fedora Lovelock (15)
