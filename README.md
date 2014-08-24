@@ -2,7 +2,7 @@
 
 ## Informations
 
-mangos-installer is a shell script to unifiy MaNGOS installation on GNU/Linux distribution.
+mangos-installer is a shell script to unify MaNGOS installation on GNU/Linux distribution.
 
     $ ./mangos-installer
     Usage: ./mangos-installer: [OPTIONS]
