@@ -29,7 +29,7 @@ GREEN="\033[32m"
 RED="\033[31m"
 RESET="\033[0m"
 
-function Usage() {
+function Usage {
     cat << EOF
 Usage: $0: [OPTIONS]
       -p <path>       : Path to MaNGOS (default: /opt/mangos-<version>)
@@ -42,7 +42,7 @@ EOF
     exit 1
 }
 
-function GetOSInfo() {
+function GetOSInfo {
     if [[ -x $(which uname 2>/dev/null) ]]; then
         os_ARCH=$(uname -m)
     else
@@ -92,21 +92,21 @@ function GetOSInfo() {
         done
     elif [ -r /etc/debian_version ]; then
         os_PACKAGE="deb"
-	os_VENDOR="Debian"
-	os_RELEASE=$(cat /etc/debian_version)
+        os_VENDOR="Debian"
+        os_RELEASE=$(cat /etc/debian_version)
         if [[ "$os_RELEASE" =~ "5.0" ]]; then
             os_CODENAME="lenny"
-	elif [[ "$os_RELEASE" =~ "6.0" ]]; then
-	    os_CODENAME="squeeze"
-	elif [[ "$os_RELEASE" =~ "7." ]]; then
-	    os_CODENAME="wheezy"
+        elif [[ "$os_RELEASE" =~ "6.0" ]]; then
+            os_CODENAME="squeeze"
+        elif [[ "$os_RELEASE" =~ "7." ]]; then
+            os_CODENAME="wheezy"
         elif [[ "$os_RELEASE" =~ "jessie" ]]; then
             os_CODENAME="jessie"
             os_RELEASE="testing"
         else
             echo "Unsupported Debian release ($os_RELEASE)"
             exit 1
-	fi
+        fi
     fi
     [ "$os_VENDOR" = "Debian" ] && [ "$os_CODENAME" = "lenny" ] && PKG_APT=$(echo $PKG_APT|sed -e "s/libmysqlclient/libmysqlclient15/;s/git/git-core/")
     if [ "$os_VENDOR" = "CentOS" ]; then
@@ -131,7 +131,7 @@ function GetOSInfo() {
     echo "-- Platform : $os_ARCH"
 }
 
-function InstallEpelRepo() {
+function InstallEpelRepo {
     IsPackageInstalled "wget" || YumInstall "wget"
     wget http://dl.fedoraproject.org/pub/epel/$VER/x86_64/epel-release-$EPEL.noarch.rpm >> $LOG_FILE 2>&1
     if [ $? -ne 0 ]; then
@@ -149,7 +149,7 @@ function InstallEpelRepo() {
     rm -f epel-release-$EPEL.noarch.rpm
 }
 
-function InstallDependencies() {
+function InstallDependencies {
     echo -n "Installing dep... "
     if [[ "$os_VENDOR" =~ (Ubuntu|Debian) ]]; then
         apt-get -q=2 update >> $LOG_FILE 2>&1
@@ -176,7 +176,7 @@ function InstallDependencies() {
     CheckStatus
 }
 
-function IsPackageInstalled() {
+function IsPackageInstalled {
     if [ "$os_PACKAGE" = "deb" ]; then
         dpkg -s "$@" > /dev/null 2>&1
     elif [ "$os_PACKAGE" = "rpm" ]; then
@@ -184,7 +184,7 @@ function IsPackageInstalled() {
     fi
 }
 
-function AptGetInstall() {
+function AptGetInstall {
     DEBIAN_FRONTEND=noninteractive \
         apt-get install --option "Dpkg::Options::=--force-confold" --assume-yes "$@" >> $LOG_FILE 2>&1
     if [ $? -ne 0 ]; then
@@ -194,7 +194,7 @@ function AptGetInstall() {
     fi
 }
 
-function YumInstall() {
+function YumInstall {
     yum install -y "$@" >> $LOG_FILE 2>&1
     if [ $? -ne 0 ]; then
         echo -e "[${RED}fail${RESET}]"
@@ -203,7 +203,7 @@ function YumInstall() {
     fi
 }
 
-function ZypperInstall() {
+function ZypperInstall {
     zypper --non-interactive install --auto-agree-with-licenses "$@" >> $LOG_FILE 2>&1
     if [ $? -ne 0 ]; then
         echo -e "[${RED}fail${RESET}]"
@@ -212,7 +212,7 @@ function ZypperInstall() {
     fi
 }
 
-function GetSources() {
+function GetSources {
     [ ! -d mangos ] || rm -rf mangos
     echo -n "Cloning MaNGOS... "
     git clone $MANGOS mangos >> $LOG_FILE 2>&1
@@ -224,28 +224,28 @@ function GetSources() {
     MANGOS_VERSION=$(grep "(MANGOS_VERSION" mangos/CMakeLists.txt|awk '{print $2}'|sed -e "s/)//")
 }
 
-function ConfigureCmake() {
+function ConfigureCmake {
     mkdir -p mangos/build && cd mangos/build
     echo -n "Configuration...  "
     $CMAKE .. -DCMAKE_INSTALL_PREFIX=$PREFIX -DDEBUG=$DEBUG \
-	-DPCH=1 -DACE_USE_EXTERNAL=$ACE_EXT -DTBB_USE_EXTERNAL=1 \
-	-DINCLUDE_BINDINGS_DIR=ScriptDev2 >> $LOG_FILE 2>&1
+        -DPCH=1 -DACE_USE_EXTERNAL=$ACE_EXT -DTBB_USE_EXTERNAL=1 \
+        -DINCLUDE_BINDINGS_DIR=ScriptDev2 >> $LOG_FILE 2>&1
     CheckStatus
 }
 
-function BuildMangos() {
+function BuildMangos {
     echo -n "Compiling...      "
     make -j $JOBS >> $LOG_FILE 2>&1
     CheckStatus
 }
 
-function InstallMangos() {
+function InstallMangos {
     echo -n "Installing...     "
     make install >> $LOG_FILE 2>&1
     CheckStatus
 }
 
-function CheckStatus() {
+function CheckStatus {
     if [ $? -eq 0 ]; then
         echo -e "[${GREEN}OK${RESET}]"
     else
