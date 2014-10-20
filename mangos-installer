@@ -50,7 +50,7 @@ function GetOSInfo {
         exit 1
     fi
     if [[ ! "$os_ARCH" =~ i(3|4|5|6)86 ]] && [ "$os_ARCH" != "x86_64" ]; then
-        echo "Unsupported architecture ($ARCH)"
+        echo "Unsupported architecture ($os_ARCH)"
         exit 1
     fi
     if [[ -x $(which lsb_release 2>/dev/null) ]]; then
