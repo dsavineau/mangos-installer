@@ -49,10 +49,14 @@ function GetOSInfo {
         echo "Can't get architecture"
         exit 1
     fi
-    if [[ ! "$os_ARCH" =~ i(3|4|5|6)86 ]] && [ "$os_ARCH" != "x86_64" ]; then
-        echo "Unsupported architecture ($os_ARCH)"
-        exit 1
-    fi
+    case "$os_ARCH" in
+        i?86|x86_64|armv7l)
+            ;;
+        *)
+            echo "Unsupported architecture ($os_ARCH)"
+            exit 1
+            ;;
+    esac
     if [[ -x $(which lsb_release 2>/dev/null) ]]; then
         os_VENDOR=$(lsb_release -i -s)
         os_RELEASE=$(lsb_release -r -s)
@@ -150,7 +154,7 @@ function InstallEpelRepo {
 }
 
 function InstallDependencies {
-    echo -n "Installing dep... "
+    echo -n "Installing dep...   "
     if [[ "$os_VENDOR" =~ (Ubuntu|Debian) ]]; then
         apt-get -q=2 update >> $LOG_FILE 2>&1
         [ "$ACE_EXT" = "1" ] && PKG_APT=$(echo $PKG_APT|sed -e "s/automake/libace-dev/")
@@ -214,19 +218,25 @@ function ZypperInstall {
 
 function GetSources {
     [ ! -d mangos ] || rm -rf mangos
-    echo -n "Cloning MaNGOS... "
+    echo -n "Cloning MaNGOS...   "
     git clone $MANGOS mangos >> $LOG_FILE 2>&1
     CheckStatus
-    echo -n "Cloning SD2...    "
+    echo -n "Cloning SD2...      "
     git clone $SCRIPTDEV2 mangos/src/bindings/ScriptDev2 >> $LOG_FILE 2>&1
     CheckStatus
     MANGOS_REVISION=$(grep "define REVISION_NR" mangos/src/shared/revision_nr.h|awk '{print $3}'|sed -e "s/\"//g")
     MANGOS_VERSION=$(grep "(MANGOS_VERSION" mangos/CMakeLists.txt|awk '{print $2}'|sed -e "s/)//")
 }
 
+function PatchG3dlite {
+    echo -n "Patching g3dlite... "
+    wget -q --no-check-certificate https://raw.githubusercontent.com/dsavineau/mangos-installer/master/g3dlite.patch -O- | patch -p0 >> $LOG_FILE 2>&1
+    CheckStatus
+}
+
 function ConfigureCmake {
     mkdir -p mangos/build && cd mangos/build
-    echo -n "Configuration...  "
+    echo -n "Configuration...    "
     $CMAKE .. -DCMAKE_INSTALL_PREFIX=$PREFIX -DDEBUG=$DEBUG \
         -DPCH=1 -DACE_USE_EXTERNAL=$ACE_EXT -DTBB_USE_EXTERNAL=1 \
         -DINCLUDE_BINDINGS_DIR=ScriptDev2 >> $LOG_FILE 2>&1
@@ -234,13 +244,13 @@ function ConfigureCmake {
 }
 
 function BuildMangos {
-    echo -n "Compiling...      "
+    echo -n "Compiling...        "
     make -j $JOBS >> $LOG_FILE 2>&1
     CheckStatus
 }
 
 function InstallMangos {
-    echo -n "Installing...     "
+    echo -n "Installing...       "
     make install >> $LOG_FILE 2>&1
     CheckStatus
 }
@@ -298,6 +308,7 @@ fi
 GetOSInfo
 InstallDependencies
 GetSources
+[ "$os_ARCH" = "armv7l" ] && PatchG3dlite
 ConfigureCmake
 BuildMangos
 InstallMangos

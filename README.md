@@ -61,6 +61,14 @@ mangos-installer has been tested on several GNU/Linux distributions :
 * Fedora Beefy Miracle (17)
 * Fedora Spherical Cow (18)
 
+## Architecture
+
+mangos-installer has been tested on several architectures :
+
+* x86 (32 bits)
+* x86_64 (64 bits)
+* armv7l (32 bits) /!\ experimental /!\
+
 ## Issues
 
 * Debian Lenny (5.0.x) : You need to backport cmake (and libarchive also) from Squeeze because version is < 2.8
