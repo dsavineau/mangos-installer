@@ -98,15 +98,14 @@ function GetOSInfo {
         os_PACKAGE="deb"
         os_VENDOR="Debian"
         os_RELEASE=$(cat /etc/debian_version)
-        if [[ "$os_RELEASE" =~ "5.0" ]]; then
+        if [[ "$os_RELEASE" =~ ^"5.0" ]]; then
             os_CODENAME="lenny"
-        elif [[ "$os_RELEASE" =~ "6.0" ]]; then
+        elif [[ "$os_RELEASE" =~ ^"6.0" ]]; then
             os_CODENAME="squeeze"
-        elif [[ "$os_RELEASE" =~ "7." ]]; then
+        elif [[ "$os_RELEASE" =~ ^"7." ]]; then
             os_CODENAME="wheezy"
-        elif [[ "$os_RELEASE" =~ "jessie" ]]; then
+        elif [[ "$os_RELEASE" =~ ^"8." ]]; then
             os_CODENAME="jessie"
-            os_RELEASE="testing"
         else
             echo "Unsupported Debian release ($os_RELEASE)"
             exit 1

@@ -49,7 +49,7 @@ mangos-installer has been tested on several GNU/Linux distributions :
 * Debian Lenny (5.0.x)
 * Debian Squeeze (6.0.x)
 * Debian Wheezy (7.x)
-* Debian Jessie (testing)
+* Debian Jessie (8.x)
 * Ubuntu Precise (12.04)
 * Ubuntu Quantal (12.10)
 * Ubuntu Raring (13.04)
