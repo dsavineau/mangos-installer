@@ -223,7 +223,6 @@ function GetSources {
     echo -n "Cloning SD2...      "
     git clone $SCRIPTDEV2 mangos/src/bindings/ScriptDev2 >> $LOG_FILE 2>&1
     CheckStatus
-    MANGOS_REVISION=$(grep "define REVISION_NR" mangos/src/shared/revision_nr.h|awk '{print $3}'|sed -e "s/\"//g")
     MANGOS_VERSION=$(grep "(MANGOS_VERSION" mangos/CMakeLists.txt|awk '{print $2}'|sed -e "s/)//")
 }
 
@@ -311,6 +310,6 @@ GetSources
 ConfigureCmake
 BuildMangos
 InstallMangos
-echo "MaNGOS $MANGOS_VERSION ($VERSION) rev $MANGOS_REVISION has been installed !"
+echo "MaNGOS $MANGOS_VERSION ($VERSION) has been installed !"
 
 exit 0
