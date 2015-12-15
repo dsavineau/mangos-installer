@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-PKG_APT="git patch cmake make gcc g++ libtbb-dev libmysqlclient-dev zlib1g-dev libssl-dev automake"
+PKG_APT="git patch cmake make gcc g++ libtbb-dev libmysqld-dev zlib1g-dev libssl-dev automake"
 PKG_RPM="git patch cmake make gcc gcc-c++ tbb-devel mysql-devel zlib-devel openssl-devel automake"
 
 LOG_FILE="$PWD/mangos-installer.log"
@@ -111,7 +111,7 @@ function GetOSInfo {
             exit 1
         fi
     fi
-    [ "$os_VENDOR" = "Debian" ] && [ "$os_CODENAME" = "lenny" ] && PKG_APT=$(echo $PKG_APT|sed -e "s/libmysqlclient/libmysqlclient15/;s/git/git-core/")
+    [ "$os_VENDOR" = "Debian" ] && [ "$os_CODENAME" = "lenny" ] && PKG_APT=$(echo $PKG_APT|sed -e "s/git/git-core/")
     if [ "$os_VENDOR" = "CentOS" ]; then
         if [[ "$os_RELEASE" =~ "6" ]]; then
             PKG_RPM=$(echo $PKG_RPM|sed -e "s/cmake/cmake28/")
