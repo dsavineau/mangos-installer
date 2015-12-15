@@ -23,18 +23,17 @@ Sample output :
 
     $ ./mangos-installer -v classic -j 4 -a
     -- GNU/Linux Debian
-    -- Codename : squeeze
-    -- Release  : 6.0.7
+    -- Codename : jessie
+    -- Release  : 8.2
     -- Package  : deb
     -- Platform : x86_64
     Installing dep... [OK]
     Cloning MaNGOS... [OK]
     Cloning SD2...    [OK]
-    Patching PCH...   [OK]
     Configuration...  [OK]
     Compiling...      [OK]
     Installing...     [OK]
-    MaNGOS 0.12.2 (classic) rev 2389 has been installed !
+    MaNGOS 0.12.3 (classic) has been installed !
 
 On Debian/Ubuntu distributions you can use "-a" option because there is available packages for ACE (libace-dev) on mainstream repositories. MaNGOS is much faster to compile.
 
@@ -46,20 +45,27 @@ All actions are logged in mangos-installer.log.
 
 mangos-installer has been tested on several GNU/Linux distributions :
 
-* Debian Lenny (5.0.x)
-* Debian Squeeze (6.0.x)
-* Debian Wheezy (7.x)
-* Debian Jessie (8.x)
-* Ubuntu Precise (12.04)
-* Ubuntu Quantal (12.10)
-* Ubuntu Raring (13.04)
-* Ubuntu Trusty (14.04)
-* CentOS 5.x
-* CentOS 6.x
-* Fedora Lovelock (15)
-* Fedora Verne (16)
-* Fedora Beefy Miracle (17)
-* Fedora Spherical Cow (18)
+* Debian
+ * Debian Lenny (5.0.x)
+ * Debian Squeeze (6.0.x)
+ * Debian Wheezy (7.x)
+ * Debian Jessie (8.x)
+* Ubuntu
+ * Ubuntu Precise (12.04)
+ * Ubuntu Quantal (12.10)
+ * Ubuntu Raring (13.04)
+ * Ubuntu Saucy (13.10)
+ * Ubuntu Trusty (14.04)
+ * Ubuntu Utopic (14.10)
+ * Ubuntu Vivid (15.04)
+* Centos
+ * CentOS 5.x
+ * CentOS 6.x
+* Fedora
+ * Fedora Lovelock (15)
+ * Fedora Verne (16)
+ * Fedora Beefy Miracle (17)
+ * Fedora Spherical Cow (18)
 
 ## Architecture
 
