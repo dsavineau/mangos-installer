@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-PKG_APT="git patch cmake make gcc g++ libtbb-dev libmysqld-dev libboost-dev zlib1g-dev libssl-dev automake"
+PKG_APT="git patch cmake make gcc g++ libtbb-dev libmysqld-dev libboost-all-dev zlib1g-dev libssl-dev automake"
 PKG_RPM="git patch cmake make gcc gcc-c++ tbb-devel mysql-devel zlib-devel openssl-devel automake"
 
 LOG_FILE="$PWD/mangos-installer.log"
