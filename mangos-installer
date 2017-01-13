@@ -48,7 +48,7 @@ function GetOSInfo {
         exit 1
     fi
     case "$os_ARCH" in
-        i?86|x86_64|armv7l)
+        i?86|x86_64)
             ;;
         *)
             echo "Unsupported architecture ($os_ARCH)"
@@ -194,12 +194,6 @@ function GetSources {
     MANGOS_VERSION=$(grep "(MANGOS_VERSION" mangos/CMakeLists.txt|awk '{print $2}'|sed -e "s/)//")
 }
 
-function PatchG3dlite {
-    echo -n "Patching g3dlite... "
-    wget -q --no-check-certificate https://raw.githubusercontent.com/dsavineau/mangos-installer/master/g3dlite.patch -O- | patch -p0 >> $LOG_FILE 2>&1
-    CheckStatus
-}
-
 function ConfigureCmake {
     mkdir -p mangos/build && cd mangos/build
     echo -n "Configuration...    "
@@ -270,7 +264,6 @@ fi
 GetOSInfo
 InstallDependencies
 GetSources
-[ "$os_ARCH" = "armv7l" ] && PatchG3dlite
 ConfigureCmake
 BuildMangos
 InstallMangos

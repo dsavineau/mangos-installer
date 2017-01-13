@@ -73,7 +73,6 @@ mangos-installer has been tested on several architectures :
 
 * x86 (32 bits)
 * x86_64 (64 bits)
-* armv7l (32 bits) /!\ experimental /!\
 
 ## Issues
 
