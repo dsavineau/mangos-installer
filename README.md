@@ -20,19 +20,18 @@ This script does all steps to install MaNGOS according GNU/Linux distribution :
 
 Sample output :
 
-    $ ./mangos-installer -v classic -j 4 -a
+    $ ./mangos-installer -v classic -j 4
     -- GNU/Linux Debian
     -- Codename : jessie
-    -- Release  : 8.2
+    -- Release  : 8.6
     -- Package  : deb
     -- Platform : x86_64
     Installing dep... [OK]
     Cloning MaNGOS... [OK]
-    Cloning SD2...    [OK]
     Configuration...  [OK]
     Compiling...      [OK]
     Installing...     [OK]
-    MaNGOS 0.12.3 (classic) has been installed !
+    MaNGOS 0.18 (classic) has been installed !
 
 All actions are logged in mangos-installer.log.
 

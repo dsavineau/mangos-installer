@@ -190,7 +190,7 @@ function GetSources {
     CheckStatus
     # (ToDo) Fix bindings directory upstream
     sed -i -e "s|src/bindings|src/|g" mangos/CMakeLists.txt >> $LOG_FILE 2>&1
-    MANGOS_VERSION=$(grep "(MANGOS_VERSION" mangos/CMakeLists.txt|awk '{print $2}'|sed -e "s/)//")
+    MANGOS_VERSION=$(cat mangos/version.txt)
 }
 
 function ConfigureCmake {
