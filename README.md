@@ -8,7 +8,6 @@ mangos-installer is a shell script to unify MaNGOS installation on GNU/Linux dis
     Usage: ./mangos-installer: [OPTIONS]
           -p <path>       : Path to MaNGOS (default: /opt/mangos-<version>)
           -d              : Set in debug mode
-          -a              : Use ACE external
           -j <number>     : Number of jobs for make (default 1)
           -v <version>    : Set MaNGOS version (classic|tbc|wotlk|cata)
           -h              : Print this help
@@ -34,10 +33,6 @@ Sample output :
     Compiling...      [OK]
     Installing...     [OK]
     MaNGOS 0.12.3 (classic) has been installed !
-
-On Debian/Ubuntu distributions you can use "-a" option because there is available packages for ACE (libace-dev) on mainstream repositories. MaNGOS is much faster to compile.
-
-TBB libraries are always installed from distributions packages and not compiled.
 
 All actions are logged in mangos-installer.log.
 
