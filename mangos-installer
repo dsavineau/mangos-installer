@@ -188,9 +188,8 @@ function GetSources {
     echo -n "Cloning MaNGOS...   "
     git clone $MANGOS mangos >> $LOG_FILE 2>&1
     CheckStatus
-    echo -n "Cloning SD2...      "
-    git clone $SCRIPTDEV2 mangos/src/bindings/ScriptDev2 >> $LOG_FILE 2>&1
-    CheckStatus
+    # (ToDo) Fix bindings directory upstream
+    sed -i -e "s|src/bindings|src/|g" mangos/CMakeLists.txt >> $LOG_FILE 2>&1
     MANGOS_VERSION=$(grep "(MANGOS_VERSION" mangos/CMakeLists.txt|awk '{print $2}'|sed -e "s/)//")
 }
 
@@ -198,7 +197,7 @@ function ConfigureCmake {
     mkdir -p mangos/build && cd mangos/build
     echo -n "Configuration...    "
     $CMAKE .. -DCMAKE_INSTALL_PREFIX=$PREFIX -DDEBUG=$DEBUG \
-        -DPCH=1 -DINCLUDE_BINDINGS_DIR=ScriptDev2 >> $LOG_FILE 2>&1
+        -DPCH=1 -DINCLUDE_BINDINGS_DIR=scriptdev2 >> $LOG_FILE 2>&1
     CheckStatus
 }
 
@@ -249,11 +248,6 @@ done
 
 if [ "$VERSION" = "classic" -o "$VERSION" = "tbc" -o "$VERSION" = "wotlk" -o "$VERSION" = "cata" ]; then
     MANGOS=git://github.com/cmangos/mangos-$VERSION.git
-    if [ "$VERSION" = "wotlk" ]; then
-        SCRIPTDEV2=git://github.com/scriptdev2/scriptdev2.git
-    else
-        SCRIPTDEV2=git://github.com/scriptdev2/scriptdev2-$VERSION.git
-    fi
     [ "$VERSION" = "cata" ] && PKG_APT+=" libbz2-dev" && PKG_RPM+=" bzip2-devel"
     [ -z "$PREFIX" ] && PREFIX="/opt/mangos-$VERSION"
 else
