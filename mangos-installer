@@ -15,12 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-PKG_APT="git patch cmake make gcc g++ libtbb-dev libmysqld-dev libboost-all-dev zlib1g-dev libssl-dev automake"
-PKG_RPM="git patch cmake make gcc gcc-c++ tbb-devel mysql-devel zlib-devel openssl-devel automake"
+PKG_APT="git patch cmake make gcc g++ libmysqld-dev libboost-all-dev zlib1g-dev libssl-dev"
+PKG_RPM="git patch cmake make gcc gcc-c++ mysql-devel boost-devel zlib-devel openssl-devel"
 
 LOG_FILE="$PWD/mangos-installer.log"
 
-ACE_EXT=0
 CMAKE="cmake"
 DEBUG=0
 JOBS=1
@@ -34,7 +33,6 @@ function Usage {
 Usage: $0: [OPTIONS]
       -p <path>       : Path to MaNGOS (default: /opt/mangos-<version>)
       -d              : Set in debug mode
-      -a              : Use ACE external
       -j <number>     : Number of jobs for make (default: 1)
       -v <version>    : Set MaNGOS version (classic|tbc|wotlk|cata)
       -h              : Print this help
@@ -156,7 +154,6 @@ function InstallDependencies {
     echo -n "Installing dep...   "
     if [[ "$os_VENDOR" =~ (Ubuntu|Debian) ]]; then
         apt-get -q=2 update >> $LOG_FILE 2>&1
-        [ "$ACE_EXT" = "1" ] && PKG_APT=$(echo $PKG_APT|sed -e "s/automake/libace-dev/")
         for PKG in $PKG_APT; do
             IsPackageInstalled $PKG || AptGetInstall $PKG
         done
@@ -236,8 +233,7 @@ function ConfigureCmake {
     mkdir -p mangos/build && cd mangos/build
     echo -n "Configuration...    "
     $CMAKE .. -DCMAKE_INSTALL_PREFIX=$PREFIX -DDEBUG=$DEBUG \
-        -DPCH=1 -DACE_USE_EXTERNAL=$ACE_EXT -DTBB_USE_EXTERNAL=1 \
-        -DINCLUDE_BINDINGS_DIR=ScriptDev2 >> $LOG_FILE 2>&1
+        -DPCH=1 -DINCLUDE_BINDINGS_DIR=ScriptDev2 >> $LOG_FILE 2>&1
     CheckStatus
 }
 
@@ -262,16 +258,13 @@ function CheckStatus {
     fi
 }
 
-while getopts 'hdaj:v:p:' OPTION; do
+while getopts 'hdj:v:p:' OPTION; do
     case "$OPTION" in
         p)
             PREFIX="$OPTARG"
             ;;
         d)
             DEBUG=1
-            ;;
-        a)
-            ACE_EXT=1
             ;;
         j)
             JOBS="$OPTARG"
