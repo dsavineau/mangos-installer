@@ -62,13 +62,6 @@ function GetOSInfo {
         os_PACKAGE="rpm"
         if [[ "$os_VENDOR" =~ (Debian|Ubuntu) ]]; then
             os_PACKAGE="deb"
-        elif [[ "$os_VENDOR" =~ "SUSE LINUX" ]]; then
-            lsb_release -d -s | grep -q openSUSE
-            if [ $? -eq 0 ]; then
-                os_VENDOR="openSUSE"
-            else
-                os_VENDOR="SUSE Linux"
-            fi
         elif [[ $os_VENDOR =~ Red.*Hat ]]; then
             os_VENDOR="Red Hat"
         fi
@@ -80,15 +73,6 @@ function GetOSInfo {
                 os_CODENAME=${ver#*|}
                 os_RELEASE=${ver%|*}
                 os_RELEASE=${os_RELEASE%.*}
-                break
-            fi
-        done
-    elif [ -r /etc/SuSE-release ]; then
-        os_PACKAGE="rpm"
-        for os_VENDOR in openSUSE "SUSE Linux"; do
-            if [[ -n "`grep \"$os_VENDOR\" /etc/SuSE-release`" ]]; then
-                os_CODENAME=`grep "CODENAME = " /etc/SuSE-release | sed 's:.* = ::g'`
-                os_RELEASE=`grep "VERSION = " /etc/SuSE-release | sed 's:.* = ::g'`
                 break
             fi
         done
@@ -164,10 +148,6 @@ function InstallDependencies {
         for PKG in $PKG_RPM; do
             IsPackageInstalled $PKG || YumInstall $PKG
         done
-    elif [[ "$os_VENDOR" =~ (openSUSE|SUSE Linux) ]]; then
-        for PKG in $PKG_RPM; do
-            IsPackageInstalled $PKG || ZypperInstall $PKG_RPM
-        done
     else
         echo -e "[${RED}fail${RESET}]"
         echo "Support for $os_VENDOR is incomplete."
@@ -199,15 +179,6 @@ function YumInstall {
     if [ $? -ne 0 ]; then
         echo -e "[${RED}fail${RESET}]"
         echo "Unable to install $@ with yum"
-        exit 1
-    fi
-}
-
-function ZypperInstall {
-    zypper --non-interactive install --auto-agree-with-licenses "$@" >> $LOG_FILE 2>&1
-    if [ $? -ne 0 ]; then
-        echo -e "[${RED}fail${RESET}]"
-        echo "Unable to install $@ with zypper"
         exit 1
     fi
 }
