@@ -246,7 +246,7 @@ done
 
 [ -f $LOG_FILE ] && rm -f $LOG_FILE
 
-if [ "$VERSION" = "classic" -o "$VERSION" = "tbc" -o "$VERSION" = "wotlk" -o "$VERSION" = "cata" ]; then
+if [[ "$VERSION" =~ ^(classic|tbc|wotlk|cata)$ ]]; then
     MANGOS=git://github.com/cmangos/mangos-$VERSION.git
     [ "$VERSION" = "cata" ] && PKG_APT+=" libbz2-dev" && PKG_RPM+=" bzip2-devel"
     [ -z "$PREFIX" ] && PREFIX="/opt/mangos-$VERSION"
