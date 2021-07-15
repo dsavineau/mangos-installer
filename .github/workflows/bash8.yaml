@@ -1,0 +1,20 @@
+name: bash8
+on: [pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+          architecture: x64
+
+      - name: install bashate
+        run: pip install bashate
+
+      - name: run bashate
+        run: bashate --max-line-length 160 mangos-installer
