@@ -111,30 +111,18 @@ function InstallDependencies {
     echo -n "Installing dep...   "
     if [[ "$os_VENDOR" =~ (Ubuntu|Debian) ]]; then
         apt-get -q=2 update >> $LOG_FILE 2>&1
-        for PKG in $PKG_APT; do
-            IsPackageInstalled $PKG || AptGetInstall $PKG
-        done
+        AptGetInstall $PKG_APT
     elif [[ "$os_VENDOR" =~ (Red Hat|Fedora|CentOS) ]]; then
         if [ "$os_VENDOR" = "CentOS" ]; then
-            IsPackageInstalled "epel-release" || YumInstall "epel-release"
+            YumInstall "epel-release"
         fi
-        for PKG in $PKG_RPM; do
-            IsPackageInstalled $PKG || YumInstall $PKG
-        done
+        YumInstall $PKG_RPM
     else
         echo -e "[${RED}fail${RESET}]"
         echo "Support for $os_VENDOR is incomplete."
         exit 1
     fi
     CheckStatus
-}
-
-function IsPackageInstalled {
-    if [ "$os_PACKAGE" = "deb" ]; then
-        dpkg -s "$@" > /dev/null 2>&1
-    elif [ "$os_PACKAGE" = "rpm" ]; then
-        rpm -q "$@" > /dev/null 2>&1
-    fi
 }
 
 function AptGetInstall {
