@@ -40,18 +40,14 @@ All actions are logged in mangos-installer.log.
 mangos-installer has been tested on several GNU/Linux distributions :
 
 * Debian
- * Debian Lenny (5.0.x)
- * Debian Squeeze (6.0.x)
- * Debian Wheezy (7.x)
- * Debian Jessie (8.x)
+ * Debian Stretch (9.x)
+ * Debian Buster (10.x)
+ * Debian Bullseye (11.x)
 * Ubuntu
- * Ubuntu Precise (12.04)
- * Ubuntu Quantal (12.10)
- * Ubuntu Raring (13.04)
- * Ubuntu Saucy (13.10)
- * Ubuntu Trusty (14.04)
- * Ubuntu Utopic (14.10)
- * Ubuntu Vivid (15.04)
+ * Ubuntu Bionic (18.04)
+ * Ubuntu Focal (20.04)
+ * Ubuntu Groovy (20.10)
+ * Ubuntu Hirsute (21.04)
 * Centos
  * CentOS 5.x
  * CentOS 6.x
@@ -70,8 +66,6 @@ mangos-installer has been tested on several architectures :
 
 ## Issues
 
-* Debian Lenny (5.0.x) : You need to backport cmake (and libarchive also) from Squeeze because version is < 2.8
-* Debian Lenny (5.0.x) : Don't use ACE packages from official repository because version is old
 * CentOS 5.x : You need to install cmake >= 2.8 from rpm.pbone.net, pkgs.repoforge.org, etc...
 
 ## License

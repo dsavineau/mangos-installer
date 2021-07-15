@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-PKG_APT="git cmake make gcc g++ libmysqld-dev libboost-all-dev zlib1g-dev libssl-dev"
+PKG_APT="git cmake make gcc g++ libmariadbd-dev libmariadb-dev-compat libboost-all-dev zlib1g-dev libssl-dev"
 PKG_RPM="git cmake make gcc gcc-c++ mysql-devel boost-devel zlib-devel openssl-devel"
 
 LOG_FILE="$PWD/mangos-installer.log"
@@ -80,20 +80,17 @@ function GetOSInfo {
         os_PACKAGE="deb"
         os_VENDOR="Debian"
         os_RELEASE=$(cat /etc/debian_version)
-        if [[ "$os_RELEASE" =~ ^"5.0" ]]; then
-            os_CODENAME="lenny"
-        elif [[ "$os_RELEASE" =~ ^"6.0" ]]; then
-            os_CODENAME="squeeze"
-        elif [[ "$os_RELEASE" =~ ^"7." ]]; then
-            os_CODENAME="wheezy"
-        elif [[ "$os_RELEASE" =~ ^"8." ]]; then
-            os_CODENAME="jessie"
+        if [[ "$os_RELEASE" =~ ^"9." ]]; then
+            os_CODENAME="stretch"
+        elif [[ "$os_RELEASE" =~ ^"10." ]]; then
+            os_CODENAME="buster"
+        elif [[ "$os_RELEASE" =~ ^"11." ]]; then
+            os_CODENAME="bullseye"
         else
             echo "Unsupported Debian release ($os_RELEASE)"
             exit 1
         fi
     fi
-    [ "$os_VENDOR" = "Debian" ] && [ "$os_CODENAME" = "lenny" ] && PKG_APT=$(echo $PKG_APT|sed -e "s/git/git-core/")
     if [ "$os_VENDOR" = "CentOS" ]; then
         if [[ "$os_RELEASE" =~ "6" ]]; then
             PKG_RPM=$(echo $PKG_RPM|sed -e "s/cmake/cmake28/")
