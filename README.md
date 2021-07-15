@@ -1,8 +1,8 @@
 # MaNGOS Installer -- README
 
-## Informations
+## Information
 
-mangos-installer is a shell script to unify MaNGOS installation on GNU/Linux distribution.
+mangos-installer is a shell script to unify MaNGOS installation on GNU/Linux distributions.
 
     $ ./mangos-installer
     Usage: ./mangos-installer: [OPTIONS]
@@ -12,7 +12,7 @@ mangos-installer is a shell script to unify MaNGOS installation on GNU/Linux dis
           -v <version>    : Set MaNGOS version (classic|tbc|wotlk|cata)
           -h              : Print this help
 
-This script does all steps to install MaNGOS according GNU/Linux distribution :
+This script does all steps to install MaNGOS depending on the GNU/Linux distribution :
 
 * Install all dependencies (git, openssl, cmake, etc...)
 * Download MaNGOS and ScriptDev2
@@ -33,7 +33,7 @@ Sample output :
     Installing...     [OK]
     MaNGOS 0.18 (classic) has been installed !
 
-All actions are logged in mangos-installer.log.
+All actions are logged in the mangos-installer.log file.
 
 ## Distributions
 
