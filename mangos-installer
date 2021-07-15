@@ -41,7 +41,7 @@ EOF
 }
 
 function GetOSInfo {
-    if [[ -x $(which uname 2>/dev/null) ]]; then
+    if [[ -x $(command -v uname 2>/dev/null) ]]; then
         os_ARCH=$(uname -m)
     else
         echo "Can't get architecture"
@@ -55,7 +55,7 @@ function GetOSInfo {
             exit 1
             ;;
     esac
-    if [[ -x $(which lsb_release 2>/dev/null) ]]; then
+    if [[ -x $(command -v lsb_release 2>/dev/null) ]]; then
         os_VENDOR=$(lsb_release -i -s)
         os_RELEASE=$(lsb_release -r -s)
         os_CODENAME=$(lsb_release -c -s)
