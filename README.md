@@ -49,13 +49,8 @@ mangos-installer has been tested on several GNU/Linux distributions :
  * Ubuntu Groovy (20.10)
  * Ubuntu Hirsute (21.04)
 * Centos
- * CentOS 5.x
- * CentOS 6.x
+ * CentOS 7.x
 * Fedora
- * Fedora Lovelock (15)
- * Fedora Verne (16)
- * Fedora Beefy Miracle (17)
- * Fedora Spherical Cow (18)
 
 ## Architecture
 
@@ -63,10 +58,6 @@ mangos-installer has been tested on several architectures :
 
 * x86 (32 bits)
 * x86_64 (64 bits)
-
-## Issues
-
-* CentOS 5.x : You need to install cmake >= 2.8 from rpm.pbone.net, pkgs.repoforge.org, etc...
 
 ## License
 

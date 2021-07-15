@@ -92,16 +92,10 @@ function GetOSInfo {
         fi
     fi
     if [ "$os_VENDOR" = "CentOS" ]; then
-        if [[ "$os_RELEASE" =~ "6" ]]; then
-            PKG_RPM=$(echo $PKG_RPM|sed -e "s/cmake/cmake28/")
-            CMAKE="cmake28"
-            EPEL="6-8"
-            VER="6"
-        elif [[ "$os_RELEASE" =~ "5" ]]; then
-            EPEL="5-4"
-            VER="5"
+        if [[ "$os_RELEASE" =~ ^"7" ]]; then
+            CMAKE="cmake3"
+            PKG_RPM=$(echo $PKG_RPM|sed -e "s/cmake/cmake3/;s/boost-devel/boost169-devel/")
         else
-            echo -e "[${RED}fail${RESET}]"
             echo "Unsupported CentOS release ($os_RELEASE)"
             exit 1
         fi
