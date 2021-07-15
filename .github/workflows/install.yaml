@@ -1,0 +1,24 @@
+name: install
+on: [pull_request]
+jobs:
+  build:
+    strategy:
+      matrix:
+        mangos-version:
+          - classic
+          - tbc
+          - wotlk
+    name: ${{ matrix.mangos-version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: run mangos-installer
+        run: sudo ./mangos-installer -v ${MANGOS_VERSION} -j 2
+        env:
+          MANGOS_VERSION: ${{ matrix.mangos-version }}
+
+      - name: show install logs on failure
+        if: ${{ failure() }}
+        run: cat ./mangos-installer.log

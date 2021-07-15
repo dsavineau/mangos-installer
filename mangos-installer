@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-PKG_APT="git patch cmake make gcc g++ libmysqld-dev libboost-all-dev zlib1g-dev libssl-dev"
-PKG_RPM="git patch cmake make gcc gcc-c++ mysql-devel boost-devel zlib-devel openssl-devel"
+PKG_APT="git cmake make gcc g++ libmariadbd-dev libmariadb-dev-compat libboost-all-dev zlib1g-dev libssl-dev"
+PKG_RPM="git cmake make gcc gcc-c++ mysql-devel boost-devel zlib-devel openssl-devel"
 
 LOG_FILE="$PWD/mangos-installer.log"
 
@@ -41,7 +41,7 @@ EOF
 }
 
 function GetOSInfo {
-    if [[ -x $(which uname 2>/dev/null) ]]; then
+    if [[ -x $(command -v uname 2>/dev/null) ]]; then
         os_ARCH=$(uname -m)
     else
         echo "Can't get architecture"
@@ -55,7 +55,7 @@ function GetOSInfo {
             exit 1
             ;;
     esac
-    if [[ -x $(which lsb_release 2>/dev/null) ]]; then
+    if [[ -x $(command -v lsb_release 2>/dev/null) ]]; then
         os_VENDOR=$(lsb_release -i -s)
         os_RELEASE=$(lsb_release -r -s)
         os_CODENAME=$(lsb_release -c -s)
@@ -80,31 +80,22 @@ function GetOSInfo {
         os_PACKAGE="deb"
         os_VENDOR="Debian"
         os_RELEASE=$(cat /etc/debian_version)
-        if [[ "$os_RELEASE" =~ ^"5.0" ]]; then
-            os_CODENAME="lenny"
-        elif [[ "$os_RELEASE" =~ ^"6.0" ]]; then
-            os_CODENAME="squeeze"
-        elif [[ "$os_RELEASE" =~ ^"7." ]]; then
-            os_CODENAME="wheezy"
-        elif [[ "$os_RELEASE" =~ ^"8." ]]; then
-            os_CODENAME="jessie"
+        if [[ "$os_RELEASE" =~ ^"9." ]]; then
+            os_CODENAME="stretch"
+        elif [[ "$os_RELEASE" =~ ^"10." ]]; then
+            os_CODENAME="buster"
+        elif [[ "$os_RELEASE" =~ ^"11." ]]; then
+            os_CODENAME="bullseye"
         else
             echo "Unsupported Debian release ($os_RELEASE)"
             exit 1
         fi
     fi
-    [ "$os_VENDOR" = "Debian" ] && [ "$os_CODENAME" = "lenny" ] && PKG_APT=$(echo $PKG_APT|sed -e "s/git/git-core/")
     if [ "$os_VENDOR" = "CentOS" ]; then
-        if [[ "$os_RELEASE" =~ "6" ]]; then
-            PKG_RPM=$(echo $PKG_RPM|sed -e "s/cmake/cmake28/")
-            CMAKE="cmake28"
-            EPEL="6-8"
-            VER="6"
-        elif [[ "$os_RELEASE" =~ "5" ]]; then
-            EPEL="5-4"
-            VER="5"
+        if [[ "$os_RELEASE" =~ ^"7" ]]; then
+            CMAKE="cmake3"
+            PKG_RPM=$(echo $PKG_RPM|sed -e "s/cmake/cmake3/;s/boost-devel/boost169-devel/")
         else
-            echo -e "[${RED}fail${RESET}]"
             echo "Unsupported CentOS release ($os_RELEASE)"
             exit 1
         fi
@@ -116,24 +107,6 @@ function GetOSInfo {
     echo "-- Platform : $os_ARCH"
 }
 
-function InstallEpelRepo {
-    IsPackageInstalled "wget" || YumInstall "wget"
-    wget http://dl.fedoraproject.org/pub/epel/$VER/x86_64/epel-release-$EPEL.noarch.rpm >> $LOG_FILE 2>&1
-    if [ $? -ne 0 ]; then
-        echo -e "[${RED}fail${RESET}]"
-        echo "Unable to download epel-release-$EPEL.noarch.rpm package"
-        exit 1
-    fi
-    rpm -Uvh epel-release-$EPEL.noarch.rpm >> $LOG_FILE 2>&1
-    if [ $? -ne 0 ]; then
-        echo -e "[${RED}fail${RESET}]"
-        echo "Unable to install epel-release-$EPEL.noarch.rpm package"
-        rm -f epel-release-$EPEL.noarch.rpm
-        exit 1
-    fi
-    rm -f epel-release-$EPEL.noarch.rpm
-}
-
 function InstallDependencies {
     echo -n "Installing dep...   "
     if [[ "$os_VENDOR" =~ (Ubuntu|Debian) ]]; then
@@ -143,7 +116,7 @@ function InstallDependencies {
         done
     elif [[ "$os_VENDOR" =~ (Red Hat|Fedora|CentOS) ]]; then
         if [ "$os_VENDOR" = "CentOS" ]; then
-            IsPackageInstalled "epel-release-$EPEL" || InstallEpelRepo
+            IsPackageInstalled "epel-release" || YumInstall "epel-release"
         fi
         for PKG in $PKG_RPM; do
             IsPackageInstalled $PKG || YumInstall $PKG
@@ -188,16 +161,18 @@ function GetSources {
     echo -n "Cloning MaNGOS...   "
     git clone $MANGOS mangos >> $LOG_FILE 2>&1
     CheckStatus
-    # (ToDo) Fix bindings directory upstream
-    sed -i -e "s|src/bindings|src/|g" mangos/CMakeLists.txt >> $LOG_FILE 2>&1
-    MANGOS_VERSION=$(cat mangos/version.txt)
+    if [ "$VERSION" = "cata" ]; then
+        MANGOS_VERSION=$(cat mangos/version.txt)
+    else
+        MANGOS_VERSION=$(grep VERSION mangos/src/shared/revision.h.in|awk '{print $3}'|tr -d '"')
+    fi
 }
 
 function ConfigureCmake {
     mkdir -p mangos/build && cd mangos/build
     echo -n "Configuration...    "
     $CMAKE .. -DCMAKE_INSTALL_PREFIX=$PREFIX -DDEBUG=$DEBUG \
-        -DPCH=1 -DINCLUDE_BINDINGS_DIR=scriptdev2 >> $LOG_FILE 2>&1
+        -DPCH=1 >> $LOG_FILE 2>&1
     CheckStatus
 }
 
