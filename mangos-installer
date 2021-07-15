@@ -188,8 +188,6 @@ function GetSources {
     echo -n "Cloning MaNGOS...   "
     git clone $MANGOS mangos >> $LOG_FILE 2>&1
     CheckStatus
-    # (ToDo) Fix bindings directory upstream
-    sed -i -e "s|src/bindings|src/|g" mangos/CMakeLists.txt >> $LOG_FILE 2>&1
     MANGOS_VERSION=$(cat mangos/version.txt)
 }
 
@@ -197,7 +195,7 @@ function ConfigureCmake {
     mkdir -p mangos/build && cd mangos/build
     echo -n "Configuration...    "
     $CMAKE .. -DCMAKE_INSTALL_PREFIX=$PREFIX -DDEBUG=$DEBUG \
-        -DPCH=1 -DINCLUDE_BINDINGS_DIR=scriptdev2 >> $LOG_FILE 2>&1
+        -DPCH=1 >> $LOG_FILE 2>&1
     CheckStatus
 }
 
