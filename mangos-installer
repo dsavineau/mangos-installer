@@ -107,24 +107,6 @@ function GetOSInfo {
     echo "-- Platform : $os_ARCH"
 }
 
-function InstallEpelRepo {
-    IsPackageInstalled "wget" || YumInstall "wget"
-    wget http://dl.fedoraproject.org/pub/epel/$VER/x86_64/epel-release-$EPEL.noarch.rpm >> $LOG_FILE 2>&1
-    if [ $? -ne 0 ]; then
-        echo -e "[${RED}fail${RESET}]"
-        echo "Unable to download epel-release-$EPEL.noarch.rpm package"
-        exit 1
-    fi
-    rpm -Uvh epel-release-$EPEL.noarch.rpm >> $LOG_FILE 2>&1
-    if [ $? -ne 0 ]; then
-        echo -e "[${RED}fail${RESET}]"
-        echo "Unable to install epel-release-$EPEL.noarch.rpm package"
-        rm -f epel-release-$EPEL.noarch.rpm
-        exit 1
-    fi
-    rm -f epel-release-$EPEL.noarch.rpm
-}
-
 function InstallDependencies {
     echo -n "Installing dep...   "
     if [[ "$os_VENDOR" =~ (Ubuntu|Debian) ]]; then
@@ -134,7 +116,7 @@ function InstallDependencies {
         done
     elif [[ "$os_VENDOR" =~ (Red Hat|Fedora|CentOS) ]]; then
         if [ "$os_VENDOR" = "CentOS" ]; then
-            IsPackageInstalled "epel-release-$EPEL" || InstallEpelRepo
+            IsPackageInstalled "epel-release" || YumInstall "epel-release"
         fi
         for PKG in $PKG_RPM; do
             IsPackageInstalled $PKG || YumInstall $PKG
