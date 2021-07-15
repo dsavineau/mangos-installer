@@ -188,7 +188,11 @@ function GetSources {
     echo -n "Cloning MaNGOS...   "
     git clone $MANGOS mangos >> $LOG_FILE 2>&1
     CheckStatus
-    MANGOS_VERSION=$(cat mangos/version.txt)
+    if [ "$VERSION" = "cata" ]; then
+        MANGOS_VERSION=$(cat mangos/version.txt)
+    else
+        MANGOS_VERSION=$(grep VERSION mangos/src/shared/revision.h.in|awk '{print $3}'|tr -d '"')
+    fi
 }
 
 function ConfigureCmake {
