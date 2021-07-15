@@ -15,7 +15,7 @@ mangos-installer is a shell script to unify MaNGOS installation on GNU/Linux dis
 This script does all steps to install MaNGOS depending on the GNU/Linux distribution :
 
 * Install all dependencies (git, openssl, cmake, etc...)
-* Download MaNGOS and ScriptDev2
+* Download MaNGOS
 * Configure and Build
 
 Sample output :
